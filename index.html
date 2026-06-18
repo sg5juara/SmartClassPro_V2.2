@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Class Pro V1.6 - SDN Situgede 5</title>
+    <title>Smart Class Pro V1.7 - SDN Situgede 5</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
@@ -32,7 +32,7 @@
                     <img src="https://i.postimg.cc/wTJ7qP8W/Chat-GPT-Image-26-Apr-2026-23-02-01.png" alt="Operator Logo" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V1.6</span></h1>
+                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V1.7</span></h1>
                     <p class="text-[10px] font-extrabold text-blue-400 uppercase tracking-widest">Digital Hub SDN Situgede 5</p>
                 </div>
             </div>
@@ -146,6 +146,9 @@
                     <button onclick="process()" class="flex-1 py-6 blue-gradient text-white rounded-[2rem] font-black text-xs tracking-[0.3em] shadow-2xl hover:scale-[1.02] transition-all uppercase">
                         🚀 Proses Rombel
                     </button>
+                    <button id="btnSort" onclick="sortAlphabetically()" class="hidden flex-1 py-6 bg-teal-600 text-white rounded-[2rem] font-black text-xs tracking-[0.3em] shadow-xl hover:bg-teal-700 transition-all uppercase">
+                        🔤 Rapihkan Abjad
+                    </button>
                     <button id="btnPDF" onclick="printPDF()" class="hidden flex-1 py-6 bg-slate-900 text-white rounded-[2rem] font-black text-xs tracking-[0.3em] shadow-xl hover:bg-blue-800 transition-all uppercase">
                         🖨️ Cetak File
                     </button>
@@ -169,7 +172,7 @@
 
     <footer class="fixed bottom-0 w-full glass border-t-4 border-blue-700 p-4 z-[100]">
         <marquee class="text-[10px] font-black uppercase italic tracking-[0.2em] text-blue-900">
-            Smart Class Pro V1.6 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
+            Smart Class Pro V1.7 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
         </marquee>
     </footer>
 
@@ -177,7 +180,6 @@
         const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         let master = [], results = [];
         
-        // Database Guru untuk Autofill
         const dataGuru = [
             { nama: "SRI MULYANAH, S.Pd", nip: "197008222007012009" },
             { nama: "RIYATI, S.Pd", nip: "198801112011012001" },
@@ -322,10 +324,27 @@
             cancelSwap();
             updateTotalSiswaUI(); 
             document.getElementById('statRombel').innerText = n;
+            
+            // Tampilkan tombol Sort dan PDF
+            document.getElementById('btnSort').classList.remove('hidden');
             document.getElementById('btnPDF').classList.remove('hidden');
             
             renderOutput();
             window.scrollTo({ top: document.getElementById('output').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        // UPDATED: FUNGSI UNTUK MENGURUTKAN ABJAD (REFRESH SORT)
+        function sortAlphabetically() {
+            if (results.length === 0) return;
+            
+            cancelSwap(); // Membatalkan swap jika sedang memilih siswa
+            
+            // Urutkan kembali setiap kelas
+            results.forEach(cls => {
+                cls.sort((a,b) => a.NAMA.localeCompare(b.NAMA));
+            });
+            
+            renderOutput();
         }
 
         function updateTotalSiswaUI() {
@@ -430,7 +449,6 @@
             const logoL = document.getElementById('prevLeft').src;
             const logoR = document.getElementById('prevRight').src;
             
-            // Mengambil angka Kelas yang dipilih untuk nama file PDF
             const selectedGrade = document.getElementById('grade').value;
 
             results.forEach((cls, i) => {
@@ -472,7 +490,6 @@
                 doc.setFont("helvetica", "normal").text(`NIP. ${document.getElementById(`wnip_${i}`).value || "________________"}`, 140, y + 27);
             });
             
-            // UPDATED: Mengubah format penamaan file saat proses penyimpanan PDF
             doc.save(`DATA_ROMBEL_KELAS_${selectedGrade}_SDN5_${tgl}.pdf`);
         }
 
