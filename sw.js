@@ -1,6 +1,6 @@
 // Ganti versi ini setiap kali Anda mengubah kode HTML/CSS/JS
 // agar browser otomatis memuat pembaruan aplikasi
-const CACHE_NAME = 'smart-class-pro-v1.7';
+const CACHE_NAME = 'smart-class-pro-v1.9';
 
 // Daftar file lokal yang WAJIB disimpan di penyimpanan offline
 const urlsToCache = [
