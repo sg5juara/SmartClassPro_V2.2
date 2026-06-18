@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Class Pro V1.7 - SDN Situgede 5</title>
+    <title>Smart Class Pro V1.9 - SDN Situgede 5</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
@@ -21,9 +21,13 @@
         .logo-container { border: 3px solid #fff; box-shadow: 0 0 15px rgba(30, 64, 175, 0.3); }
         .animate-fade { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Hilangkan panah default pada select */
+        select.pindah-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; text-align-last: center; }
     </style>
 </head>
 <body class="pb-24">
+
+    <audio id="soundSuccess" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
 
     <nav class="glass sticky top-0 z-50 border-b border-blue-100 px-8 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -32,7 +36,7 @@
                     <img src="https://i.postimg.cc/wTJ7qP8W/Chat-GPT-Image-26-Apr-2026-23-02-01.png" alt="Operator Logo" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V1.7</span></h1>
+                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V1.9</span></h1>
                     <p class="text-[10px] font-extrabold text-blue-400 uppercase tracking-widest">Digital Hub SDN Situgede 5</p>
                 </div>
             </div>
@@ -172,7 +176,7 @@
 
     <footer class="fixed bottom-0 w-full glass border-t-4 border-blue-700 p-4 z-[100]">
         <marquee class="text-[10px] font-black uppercase italic tracking-[0.2em] text-blue-900">
-            Smart Class Pro V1.7 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
+            Smart Class Pro V1.9 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
         </marquee>
     </footer>
 
@@ -221,6 +225,21 @@
                 </div>`;
             }
             document.getElementById('currentDate').innerText = formatTgl(new Date());
+
+            // MEMUAT LOGO DARI LOCAL STORAGE SAAT HALAMAN DIBUKA
+            loadSavedLogos();
+        }
+
+        // FUNGSI MEMBACA LOGO DARI MEMORI BROWSER
+        function loadSavedLogos() {
+            const savedLeft = localStorage.getItem('logo_prevLeft');
+            if (savedLeft) {
+                document.getElementById('prevLeft').src = savedLeft;
+            }
+            const savedRight = localStorage.getItem('logo_prevRight');
+            if (savedRight) {
+                document.getElementById('prevRight').src = savedRight;
+            }
         }
 
         function autofillNIP(namaDipilih, index) {
@@ -235,13 +254,33 @@
             return `${d.getDate()} ${bln[d.getMonth()]} ${d.getFullYear()}`;
         }
 
+        // FUNGSI PREVIEW GAMBAR & MENYIMPAN KE LOCAL STORAGE
         function previewImage(input, id) {
             const f = input.files[0];
-            if(f) { const r = new FileReader(); r.onload = (e) => document.getElementById(id).src = e.target.result; r.readAsDataURL(f); }
+            if(f) { 
+                const r = new FileReader(); 
+                r.onload = (e) => {
+                    const base64Str = e.target.result;
+                    document.getElementById(id).src = base64Str; 
+                    
+                    // Simpan ke Local Storage agar tidak hilang
+                    localStorage.setItem('logo_' + id, base64Str);
+                }; 
+                r.readAsDataURL(f); 
+            }
         }
 
         function updateFileLabel(input) { 
             document.getElementById('fileLabel').innerText = `${input.files.length} File Excel Terkoneksi`; 
+        }
+
+        // MAINKAN AUDIO
+        function playSuccessSound() {
+            const audio = document.getElementById('soundSuccess');
+            if(audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("Audio play di-block oleh browser, interaksi user diperlukan."));
+            }
         }
 
         async function process() {
@@ -307,14 +346,19 @@
                 n = n.replace(/^(MUHAMAD|MOHAMAD|MOHAMMAD|MOH|M\.)\s+/g, 'MUHAMMAD ');
                 return n;
             };
-
             sisaSiswa.sort((a, b) => getSortKey(a.NAMA).localeCompare(getSortKey(b.NAMA)));
             
-            let currentClassIdx = top10.length % n; 
             sisaSiswa.forEach((s) => {
-                results[currentClassIdx].push(s);
+                let targetIdx = 0;
+                let minCount = results[0].length;
+                for (let k = 1; k < n; k++) {
+                    if (results[k].length < minCount) {
+                        minCount = results[k].length;
+                        targetIdx = k;
+                    }
+                }
+                results[targetIdx].push(s);
                 used.add(s.NAMA);
-                currentClassIdx = (currentClassIdx + 1) % n;
             });
 
             results.forEach(cls => {
@@ -325,25 +369,21 @@
             updateTotalSiswaUI(); 
             document.getElementById('statRombel').innerText = n;
             
-            // Tampilkan tombol Sort dan PDF
             document.getElementById('btnSort').classList.remove('hidden');
             document.getElementById('btnPDF').classList.remove('hidden');
             
+            playSuccessSound();
+
             renderOutput();
             window.scrollTo({ top: document.getElementById('output').offsetTop - 100, behavior: 'smooth' });
         }
 
-        // UPDATED: FUNGSI UNTUK MENGURUTKAN ABJAD (REFRESH SORT)
         function sortAlphabetically() {
             if (results.length === 0) return;
-            
-            cancelSwap(); // Membatalkan swap jika sedang memilih siswa
-            
-            // Urutkan kembali setiap kelas
+            cancelSwap(); 
             results.forEach(cls => {
                 cls.sort((a,b) => a.NAMA.localeCompare(b.NAMA));
             });
-            
             renderOutput();
         }
 
@@ -386,6 +426,14 @@
                             ? `<span class="text-[9px] bg-yellow-400 text-white px-3 py-1 rounded-full shadow-sm">Dipilih</span>`
                             : `<button onclick="handleSwap(${i},${j})" class="text-[9px] bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-600 hover:text-white transition-all shadow-sm">Ke Sini</button>`;
 
+                    let optionPindah = `<option value="" selected disabled>Pindah</option>`;
+                    for(let k=0; k<results.length; k++) {
+                        if(k !== i) optionPindah += `<option value="${k}">${ALPHABET[k]}</option>`;
+                    }
+                    let btnPindah = !swapState.isActive 
+                        ? `<select onchange="moveStudent(${i}, ${j}, this.value)" class="pindah-select text-[9px] bg-purple-50 text-purple-600 px-2 py-1 rounded-full hover:bg-purple-600 hover:text-white transition-all shadow-sm ml-1 cursor-pointer outline-none font-bold" title="Pindah Kelas">${optionPindah}</select>`
+                        : '';
+
                     let btnHapus = !swapState.isActive 
                         ? `<button onclick="deleteStudent(${i},${j})" class="text-[9px] bg-red-50 text-red-600 px-2 py-1 rounded-full hover:bg-red-600 hover:text-white transition-all shadow-sm ml-1" title="Hapus Siswa">✖</button>`
                         : '';
@@ -400,13 +448,30 @@
                                 <span class="text-slate-800">${s.NAMA}</span> ${rankBadge}
                                 <span class="${jkColor} ml-2 font-black">${s.JK}</span>
                             </div>
-                            <div class="flex items-center">${btnTukar} ${btnHapus}</div>
+                            <div class="flex items-center">${btnTukar} ${btnPindah} ${btnHapus}</div>
                         </div>`;
                 });
 
                 html += `</div></div>`;
                 out.innerHTML += html;
             });
+        }
+
+        function moveStudent(cIdx, sIdx, targetC) {
+            targetC = parseInt(targetC);
+            if(isNaN(targetC) || targetC === cIdx) return;
+            
+            const studentName = results[cIdx][sIdx].NAMA;
+            if(confirm(`Pindahkan "${studentName}" ke Rombel ${ALPHABET[targetC]}?`)) {
+                let student = results[cIdx][sIdx];
+                results[cIdx].splice(sIdx, 1); 
+                results[targetC].push(student); 
+                
+                updateTotalSiswaUI();
+                renderOutput();
+            } else {
+                renderOutput(); 
+            }
         }
 
         function handleSwap(cIdx, sIdx) {
