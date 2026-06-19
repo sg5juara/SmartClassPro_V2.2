@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Class Pro V2.1 - SDN Situgede 5</title>
+    <title>Smart Class Pro V2.2 - SDN Situgede 5</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
@@ -21,6 +21,7 @@
         .logo-container { border: 3px solid #fff; box-shadow: 0 0 15px rgba(30, 64, 175, 0.3); }
         .animate-fade { animation: fadeIn 0.4s ease-out; }
         select.pindah-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; text-align-last: center; }
+        .placeholder-text { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 8px; font-weight: bold; color: #94a3b8; text-align: center; }
     </style>
 </head>
 <body class="pb-24">
@@ -34,7 +35,7 @@
                     <img src="https://i.postimg.cc/wTJ7qP8W/Chat-GPT-Image-26-Apr-2026-23-02-01.png" alt="Operator Logo" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V2.1</span></h1>
+                    <h1 class="text-2xl font-black tracking-tighter text-blue-900 uppercase italic">Smart Class <span class="text-blue-500">Pro V2.2</span></h1>
                     <p class="text-[10px] font-extrabold text-blue-400 uppercase tracking-widest">Digital Hub SDN Situgede 5</p>
                 </div>
             </div>
@@ -50,18 +51,20 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 glass rounded-[2.5rem] p-8 card-shadow flex flex-wrap gap-10 items-center border-l-8 border-blue-600">
                 <div class="flex gap-6">
-                    <div class="text-center cursor-pointer" onclick="document.getElementById('logoLeft').click()">
-                        <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden mb-2">
-                            <img id="prevLeft" class="w-full h-full object-contain p-2" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <div class="text-center cursor-pointer group" onclick="document.getElementById('logoLeft').click()">
+                        <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden mb-2 relative hover:bg-blue-50 transition-colors">
+                            <img id="prevLeft" class="w-full h-full object-contain p-1 absolute z-10" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                            <span class="placeholder-text absolute z-0">Klik Upload<br>Logo Pemkot</span>
                         </div>
-                        <input type="file" id="logoLeft" accept="image/*" onchange="previewImage(this, 'prevLeft')" class="hidden">
+                        <input type="file" id="logoLeft" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(this, 'prevLeft')" class="hidden">
                         <span class="text-[9px] font-black uppercase text-blue-600">Logo Pemkot</span>
                     </div>
-                    <div class="text-center cursor-pointer" onclick="document.getElementById('logoRight').click()">
-                        <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden mb-2">
-                            <img id="prevRight" class="w-full h-full object-contain p-2" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <div class="text-center cursor-pointer group" onclick="document.getElementById('logoRight').click()">
+                        <div class="w-20 h-20 bg-slate-50 rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center overflow-hidden mb-2 relative hover:bg-blue-50 transition-colors">
+                            <img id="prevRight" class="w-full h-full object-contain p-1 absolute z-10" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                            <span class="placeholder-text absolute z-0">Klik Upload<br>Logo Sekolah</span>
                         </div>
-                        <input type="file" id="logoRight" accept="image/*" onchange="previewImage(this, 'prevRight')" class="hidden">
+                        <input type="file" id="logoRight" accept="image/png, image/jpeg, image/jpg" onchange="previewImage(this, 'prevRight')" class="hidden">
                         <span class="text-[9px] font-black uppercase text-blue-600">Logo Sekolah</span>
                     </div>
                 </div>
@@ -185,7 +188,7 @@
 
     <footer class="fixed bottom-0 w-full glass border-t-4 border-blue-700 p-4 z-[100]">
         <marquee class="text-[10px] font-black uppercase italic tracking-[0.2em] text-blue-900">
-            Smart Class Pro V2.1 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
+            Smart Class Pro V2.2 — SDN Situgede 5 Kota Bogor — Dikembangkan oleh Cecep Solehudin
         </marquee>
     </footer>
 
@@ -240,9 +243,15 @@
 
         function loadSavedLogos() {
             const savedLeft = localStorage.getItem('logo_prevLeft');
-            if (savedLeft) document.getElementById('prevLeft').src = savedLeft;
+            if (savedLeft) {
+                document.getElementById('prevLeft').src = savedLeft;
+                document.getElementById('prevLeft').style.opacity = 1;
+            }
             const savedRight = localStorage.getItem('logo_prevRight');
-            if (savedRight) document.getElementById('prevRight').src = savedRight;
+            if (savedRight) {
+                document.getElementById('prevRight').src = savedRight;
+                document.getElementById('prevRight').style.opacity = 1;
+            }
         }
 
         function autofillNIP(namaDipilih, index) {
@@ -264,6 +273,7 @@
                 r.onload = (e) => {
                     const base64Str = e.target.result;
                     document.getElementById(id).src = base64Str; 
+                    document.getElementById(id).style.opacity = 1;
                     localStorage.setItem('logo_' + id, base64Str);
                 }; 
                 r.readAsDataURL(f); 
@@ -537,21 +547,36 @@
             }
         }
 
+        // UPDATED: Deteksi Format Gambar Akurat untuk jsPDF
+        function getPdfImageFormat(dataUrl) {
+            const match = dataUrl.match(/data:image\/(.*);base64/i);
+            if (!match) return 'PNG'; 
+            const format = match[1].toUpperCase();
+            if (format === 'JPG' || format === 'JPEG') return 'JPEG';
+            if (format === 'WEBP') return 'WEBP';
+            return 'PNG';
+        }
+
         async function printPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', [215, 330]); 
             const tgl = formatTgl(new Date());
+            
             const logoL = document.getElementById('prevLeft').src;
             const logoR = document.getElementById('prevRight').src;
-            
             const selectedGrade = document.getElementById('grade').value;
             const isRankPrinted = document.getElementById('showRankPdf').checked;
 
             results.forEach((cls, i) => {
                 if(i > 0) doc.addPage();
                 
-                if(!logoL.startsWith('data:image/gif')) doc.addImage(logoL, 'PNG', 15, 10, 20, 20);
-                if(!logoR.startsWith('data:image/gif')) doc.addImage(logoR, 'PNG', 180, 10, 20, 20);
+                // PENGGUNAAN DETEKSI FORMAT OTOMATIS AGAR LOGO TAMPIL DI GITHUB
+                if(!logoL.startsWith('data:image/gif')) {
+                    try { doc.addImage(logoL, getPdfImageFormat(logoL), 15, 10, 20, 20); } catch(e) {}
+                }
+                if(!logoR.startsWith('data:image/gif')) {
+                    try { doc.addImage(logoR, getPdfImageFormat(logoR), 180, 10, 20, 20); } catch(e) {}
+                }
 
                 doc.setFont("helvetica", "bold").setFontSize(14).text("PEMERINTAH KOTA BOGOR", 107.5, 15, {align:'center'});
                 doc.setFontSize(12).text("DINAS PENDIDIKAN - SDN SITUGEDE 5", 107.5, 21, {align:'center'});
@@ -582,7 +607,6 @@
                 if (y > 280) { doc.addPage(); y = 20; }
 
                 doc.setFontSize(10).text("Kepala Sekolah,", 30, y);
-                // UPDATED: Tidak menggunakan .toUpperCase() agar "S.Pd." tetap terjaga ejaannya
                 doc.text(document.getElementById('kepsek').value, 30, y + 22);
                 doc.setFont("helvetica", "normal").text(`NIP. ${document.getElementById('nip').value}`, 30, y + 27);
 
