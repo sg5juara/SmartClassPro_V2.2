@@ -1,36 +1,41 @@
+// Nama cache disesuaikan dengan versi terbaru
 const CACHE_NAME = 'smart-class-pro-v2.2-cache';
 
-// File lokal utama yang wajib di-cache saat pertama kali diinstal
-const STATIC_ASSETS = [
-    './',
-    './index.html',
-    './manifest.json',
-    // Tambahkan nama file icon logo di bawah ini jika ada di folder lokal
-    // './icon-192x192.png',
-    // './icon-512x512.png'
+// Daftar aset dan library CDN yang akan disimpan di memori perangkat
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/manifest.json',
+    'https://cdn.tailwindcss.com',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js',
+    'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
+    'https://www.soundjay.com/buttons/sounds/button-09.mp3'
 ];
 
-// Event Install: Menyimpan file statis ke dalam cache
+// Event Install: Menyimpan semua aset ke dalam Cache saat pertama kali diload
 self.addEventListener('install', event => {
-    self.skipWaiting();
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('[Service Worker] Caching Static Assets');
-            return cache.addAll(STATIC_ASSETS);
-        })
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Service Worker: Cache berhasil dibuat');
+                return cache.addAll(urlsToCache);
+            })
     );
 });
 
-// Event Activate: Membersihkan cache versi lama jika ada pembaruan aplikasi
+// Event Activate: Membersihkan cache versi lama agar tidak membebani perangkat
 self.addEventListener('activate', event => {
-    self.clients.claim();
+    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== CACHE_NAME) {
-                        console.log('[Service Worker] Menghapus cache lama:', cache);
-                        return caches.delete(cache);
+                cacheNames.map(cacheName => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('Service Worker: Menghapus cache lama', cacheName);
+                        return caches.delete(cacheName);
                     }
                 })
             );
@@ -38,42 +43,36 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Event Fetch: Strategi "Cache First, fall back to Network" dengan "Dynamic Caching"
+// Event Fetch: Mengambil data dari Cache jika internet offline, atau fetch dari internet jika belum ada di cache
 self.addEventListener('fetch', event => {
-    // Abaikan request yang bukan GET (seperti POST, PUT)
-    if (event.request.method !== 'GET') return;
-
     event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            // 1. Jika ada di cache, langsung gunakan cache (sangat cepat & bisa offline)
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            // 2. Jika tidak ada di cache, ambil dari internet (Network)
-            return fetch(event.request).then(networkResponse => {
-                // Pastikan responsnya valid
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors' && networkResponse.type !== 'opaque') {
-                    return networkResponse;
+        caches.match(event.request)
+            .then(response => {
+                // Return cache jika ada
+                if (response) {
+                    return response;
                 }
+                // Fetch request jika tidak ada di cache
+                return fetch(event.request).then(
+                    function(response) {
+                        // Jangan simpan cache jika respons tidak valid
+                        if(!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
+                        }
 
-                // 3. Simpan library CDN/eksternal ke dalam cache secara dinamis agar bisa offline nanti
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    // Hindari caching request dari chrome-extension atau skema yang tidak didukung
-                    if (event.request.url.startsWith('http')) {
-                        cache.put(event.request, responseToCache);
+                        // Simpan respons baru ke cache untuk penggunaan berikutnya
+                        let responseToCache = response.clone();
+                        caches.open(CACHE_NAME)
+                            .then(function(cache) {
+                                cache.put(event.request, responseToCache);
+                            });
+
+                        return response;
                     }
-                });
-
-                return networkResponse;
-            }).catch(error => {
-                console.log('[Service Worker] Fetch gagal, mode offline aktif.', error);
-                // Jika offline dan me-request HTML, kembalikan ke index.html
-                if (event.request.mode === 'navigate') {
-                    return caches.match('./index.html');
-                }
-            });
-        })
+                );
+            }).catch(() => {
+                // Fallback jika sama sekali tidak ada koneksi dan file tidak ada di cache
+                console.log('Service Worker: Gagal mengambil data, status offline.');
+            })
     );
 });
